@@ -1,127 +1,88 @@
-import React from 'react';
+"use client";
+import { useState, useEffect } from "react";
+import { fetchApi } from "@/lib/apiClient";
+import { formatDistanceToNow } from "date-fns";
+import { Search } from "lucide-react";
 
 export default function Home() {
-  return (
-    <div className="min-h-screen bg-neutral-950 text-white font-sans selection:bg-indigo-500/30">
-      {/* Navbar */}
-      <header className="border-b border-white/10 bg-black/50 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-              S
-            </div>
-            <span className="font-semibold tracking-tight text-lg">SRM Insider</span>
-          </div>
-          <div className="flex items-center gap-4 text-sm font-medium text-neutral-400">
-            <span className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              API Online
-            </span>
-          </div>
-        </div>
-      </header>
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState("");
 
-      <main className="max-w-6xl mx-auto px-6 py-16 space-y-16">
-        {/* Hero Section */}
-        <div className="text-center space-y-6 max-w-3xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm font-medium text-neutral-300">
-            <span>✨</span> Recruitment Task 2
+  const loadPosts = async (query = "") => {
+    setLoading(true);
+    try {
+      const data = await fetchApi(`/posts?q=${query}&limit=20`);
+      setPosts(data.posts || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPosts(search);
+  }, [search]);
+
+  return (
+    <div className="min-h-screen bg-neutral-950 text-white font-sans p-6 pb-24">
+      <main className="max-w-3xl mx-auto space-y-12">
+        {/* Header section matching LinkedIn branding */}
+        <div className="text-center space-y-4 pt-12 pb-6 border-b border-white/10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-indigo-300 tracking-widest uppercase">
+            Built by Students
           </div>
-          <h1 className="text-5xl md:text-6xl font-extrabold tracking-tight">
-            Backend System <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">
-              Ready for Production
-            </span>
+          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+            Innovate | Build | <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Connect</span>
           </h1>
-          <p className="text-lg text-neutral-400 leading-relaxed">
-            A fully secure, scalable RESTful API built with Next.js App Router, Prisma ORM, and MySQL. Featuring strict JWT authentication and role-based access.
+          <p className="text-neutral-400 max-w-xl mx-auto text-sm leading-relaxed">
+            Welcome to the SRM Insider Community Feed. Discover tools, share ideas, and connect with other developers at SRM University.
           </p>
-          <div className="flex items-center justify-center gap-4 pt-4">
-            <a href="/api/posts" className="px-6 py-3 rounded-xl bg-white text-black font-semibold hover:bg-neutral-200 transition">
-              Test GET /posts
-            </a>
-            <a href="https://www.linkedin.com/company/srm-insider-community/" target="_blank" rel="noreferrer" className="px-6 py-3 rounded-xl bg-white/5 font-semibold border border-white/10 hover:bg-white/10 transition">
-              About SRM Insider
-            </a>
+          
+          <div className="relative max-w-md mx-auto pt-4">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search posts..." 
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition"
+            />
           </div>
         </div>
 
-        {/* Feature Grid */}
-        <div className="grid md:grid-cols-3 gap-6 pt-8">
-          <FeatureCard 
-            title="JWT Authentication" 
-            desc="Secure stateless sessions with bcrypt hashed passwords and token verification."
-            icon="🔐"
-          />
-          <FeatureCard 
-            title="MySQL & Prisma" 
-            desc="Relational integrity using MySQL with modern schema modeling via Prisma ORM."
-            icon="🗄️"
-          />
-          <FeatureCard 
-            title="RBAC Guard" 
-            desc="Route handlers strictly gated verifying User/Admin roles prior to transactions."
-            icon="🛡️"
-          />
+        {/* Feed */}
+        <div className="space-y-6">
+          {loading ? (
+            <div className="text-center text-neutral-500 py-12 animate-pulse">Loading community posts...</div>
+          ) : posts.length === 0 ? (
+            <div className="text-center text-neutral-500 py-12">No posts found. Be the first to share something!</div>
+          ) : (
+            posts.map(post => (
+              <div key={post.id} className="p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition group">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-900 to-purple-900 flex items-center justify-center font-bold text-sm border border-white/10">
+                      {post.user?.name?.charAt(0).toUpperCase() || "U"}
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-sm text-neutral-200">{post.user?.name || "Unknown User"}</h4>
+                      <p className="text-xs text-neutral-500">
+                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
+                <p className="text-neutral-400 text-sm whitespace-pre-wrap leading-relaxed">
+                  {post.content}
+                </p>
+              </div>
+            ))
+          )}
         </div>
-
-        {/* API Endpoints Terminal */}
-        <div className="rounded-2xl border border-white/10 bg-black overflow-hidden shadow-2xl">
-          <div className="border-b border-white/10 bg-white/5 px-4 py-3 flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500/80"></div>
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-              <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
-            </div>
-            <div className="mx-auto text-xs font-mono text-neutral-500">API Documentation</div>
-          </div>
-          <div className="p-6 font-mono text-sm space-y-4">
-            <Endpoint method="POST" path="/api/auth/signup" desc="Register a new account" />
-            <Endpoint method="POST" path="/api/auth/login" desc="Login to receive JWT token" />
-            <Endpoint method="GET" path="/api/auth/me" desc="Get current profile (Protected)" />
-            <div className="h-px w-full bg-white/5 my-4"></div>
-            <Endpoint method="GET" path="/api/posts" desc="List all posts (Supports ?q=, &page=)" />
-            <Endpoint method="POST" path="/api/posts" desc="Create new post (Protected)" />
-            <Endpoint method="GET" path="/api/posts/:id" desc="Get single post" />
-            <Endpoint method="PUT" path="/api/posts/:id" desc="Update post (Owner/Admin)" />
-            <Endpoint method="DELETE" path="/api/posts/:id" desc="Delete post (Owner/Admin)" />
-            <div className="h-px w-full bg-white/5 my-4"></div>
-            <Endpoint method="GET" path="/api/admin/users" desc="List all system users (Admin Only)" />
-          </div>
-        </div>
-
       </main>
-    </div>
-  );
-}
-
-function FeatureCard({ title, desc, icon }) {
-  return (
-    <div className="p-6 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition group cursor-default">
-      <div className="text-3xl mb-4 group-hover:scale-110 transition-transform origin-left">{icon}</div>
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className="text-neutral-400 text-sm leading-relaxed">{desc}</p>
-    </div>
-  );
-}
-
-function Endpoint({ method, path, desc }) {
-  const color = 
-    method === 'GET' ? 'text-blue-400' : 
-    method === 'POST' ? 'text-green-400' : 
-    method === 'PUT' ? 'text-yellow-400' : 'text-red-400';
-
-  return (
-    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 hover:bg-white/5 p-2 rounded-lg transition-colors -mx-2">
-      <div className="flex items-center gap-4 w-64 shrink-0">
-        <span className={`font-bold w-14 ${color}`}>{method}</span>
-        <span className="text-neutral-300">{path}</span>
-      </div>
-      <span className="text-neutral-500 font-sans hidden sm:block">..........</span>
-      <span className="text-neutral-400">{desc}</span>
     </div>
   );
 }
