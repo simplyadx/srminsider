@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# SRM Insider Recruitment Task - Backend App
+
+This is a production-ready Next.js 16 (App Router) backend built as an API layer using **MySQL** (via Prisma ORM), **JWT Authentication**, and standard MVC separation.
+
+## Tech Stack
+- Framework: Next.js (App Router) API Routes (`route.js`)
+- Database: MySQL
+- ORM: Prisma
+- Auth: JWT (JSON Web Tokens) `jsonwebtoken` & `bcryptjs`
+- Validation: Zod schemas
+
+## Project Structure
+```text
+/src
+  /app
+    /api           -> All Route Handlers
+      /auth        -> signup, login, me
+      /posts       -> CRUD for posts
+      /admin       -> User management
+  /lib
+    prisma.js      -> Singleton DB connection
+    jwt.js         -> Token logic
+    auth.js        -> Middleware wrapper (withAuth)
+    response.js    -> Standardized API responses
+    validate.js    -> Zod schemas
+/prisma
+  schema.prisma    -> database schema models
+```
+
+---
 
 ## Getting Started
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+### 1. Database Setup (MySQL)
+Ensure you have a MySQL server running locally (or via Docker/Planetscale). Create an empty database:
+```sql
+CREATE DATABASE srminsider;
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Environment Variables
+Copy `.env.example` to `.env` and fill out your details:
+```bash
+cp .env.example .env
+```
+Ensure your `DATABASE_URL` matches your local MySQL setup.
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### 3. Install Dependencies
+```bash
+bun install
+# or npm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 4. Run Migrations & Generate Prisma Client
+This will create the tables in your database based on `schema.prisma`.
+```bash
+bunx prisma migrate dev --name init
+bunx prisma generate
+```
 
-## Learn More
+### 5. Start the App
+```bash
+bun run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## API Documentation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+A Postman collection is included in the project root: `srm_insider_api.postman_collection.json`. Import this directly into Postman or Thunder Client to test endpoints!
 
-## Deploy on Vercel
+### Public Routes
+- **POST** `/api/auth/signup` - Register a new account
+- **POST** `/api/auth/login` - Login to get JWT access token
+- **GET** `/api/posts` - List posts (Supports `?q=search&page=1&limit=10`)
+- **GET** `/api/posts/:id` - Get single post
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Protected Routes (Requires JWT)
+*Pass header: `Authorization: Bearer <token>`*
+- **GET** `/api/auth/me` - Get current logged-in profile
+- **POST** `/api/posts` - Create a post
+- **PUT** `/api/posts/:id` - Update a post (Must be owner or Admin)
+- **DELETE** `/api/posts/:id` - Delete a post (Must be owner or Admin)
+- **GET** `/api/admin/users` - List all users (Requires `ADMIN` role)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Bonus Features Included
+✅ Role-based Access Control (User/Admin separation via middleware)
+✅ Pagination for posts (`/api/posts?page=1&limit=10`)
+✅ Search and filtering (`/api/posts?q=keyword`)
+✅ MVC Architecture (`/lib` separation from Route handlers)
+✅ Postman Collection exported and bundled
