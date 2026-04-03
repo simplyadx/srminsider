@@ -36,13 +36,7 @@ Ensure you have a MySQL server running locally (or via Docker/Planetscale). Crea
 ```sql
 CREATE DATABASE srminsider;
 ```
-
-### 2. Environment Variables
-Copy `.env.example` to `.env` and fill out your details:
-```bash
-cp .env.example .env
-```
-Ensure your `DATABASE_URL` matches your local MySQL setup.
+Ensure your `DATABASE_URL` matches your local MySQL setup in .env - change the pass from 0000 to ur sql pass.
 
 ### 3. Install Dependencies
 ```bash
